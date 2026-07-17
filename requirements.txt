@@ -1,7 +1,10 @@
 fastai
-torch
 torchvision
 pandas
 numpy
 matplotlib
 jupyter
+fastapi
+uvicorn
+pydantic
+torch --index-url https://download.pytorch.org/whl/cpu
