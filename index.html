@@ -479,10 +479,6 @@ async function submitRatings(){
   statusEl.innerHTML = `<span class="spinner"></span> Fitting your taste profile…`;
 
   try{
-    // Gradio's classic REST shape: POST an array of positional args to /run/<api_name>.
-    // If your Space runs a newer Gradio version, check its API docs page
-    // (yourspace.hf.space/?view=api) for the exact request/response shape —
-    // some versions use /call/<api_name> plus a follow-up GET for the result.
     const response = await fetch(CONFIG.SPACE_URL + CONFIG.RECOMMEND_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -490,17 +486,16 @@ async function submitRatings(){
     });
 
     if(!response.ok){
-      throw new Error(`Space responded with ${response.status}`);
+      throw new Error(`Server responded with ${response.status}`);
     }
 
     const payload = await response.json();
-    const result = JSON.parse(payload.data[0]);
 
-    if(result.error){
-      throw new Error(result.error);
+    if (!payload.recommendations) {
+      throw new Error("Server did not return recommendations.");
     }
 
-    renderResults(result.recommendations);
+    renderResults(payload.recommendations);
     statusEl.textContent = '';
   } catch(err){
     statusEl.classList.add('error');
