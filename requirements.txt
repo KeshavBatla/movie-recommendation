@@ -1,0 +1,7 @@
+fastai
+torch
+torchvision
+pandas
+numpy
+matplotlib
+jupyter

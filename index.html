@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pick Five, Get Your Reel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12131f;
+    --bg-raised: #191b2a;
+    --parchment: #f4e9d8;
+    --parchment-dim: #e7dac4;
+    --ink: #23201a;
+    --gold: #c9a15c;
+    --gold-bright: #e0bd7f;
+    --rose: #b5453a;
+    --muted: #9498ac;
+    --text: #ece7da;
+    --radius: 6px;
+    --max-w: 980px;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+
+  .display{
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.03em;
+    line-height: 0.95;
+  }
+
+  .mono{ font-family: 'IBM Plex Mono', monospace; }
+
+  a{ color: inherit; }
+
+  /* ---------- Sprocket / film-strip motif ---------- */
+  .sprocket-strip{
+    height: 22px;
+    background:
+      radial-gradient(circle, var(--bg) 0 4px, transparent 4.5px) 10px 50% / 28px 100%,
+      linear-gradient(var(--gold) , var(--gold));
+    background-repeat: repeat-x, no-repeat;
+    opacity: 0.85;
+  }
+  .sprocket-strip.dim{
+    background:
+      radial-gradient(circle, var(--bg) 0 4px, transparent 4.5px) 10px 50% / 28px 100%,
+      linear-gradient(var(--bg-raised), var(--bg-raised));
+    opacity: 1;
+  }
+
+  /* ---------- Header / hero ---------- */
+  header{
+    padding: 64px 24px 40px;
+    text-align: center;
+    max-width: var(--max-w);
+    margin: 0 auto;
+  }
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 18px;
+  }
+  h1{
+    font-size: clamp(42px, 8vw, 84px);
+    margin: 0 0 18px;
+    color: var(--parchment);
+  }
+  .sub{
+    max-width: 520px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  /* ---------- Rating section ---------- */
+  main{ max-width: var(--max-w); margin: 0 auto; padding: 0 24px 140px; }
+
+  .reel-frame{
+    margin-top: 48px;
+    border: 1px solid rgba(201,161,92,0.25);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-raised);
+  }
+
+  .movie-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 1px;
+    background: rgba(201,161,92,0.15);
+  }
+
+  .movie-card{
+    background: var(--bg-raised);
+    padding: 22px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: background 0.2s ease;
+  }
+  .movie-card:hover{ background: #1e2033; }
+
+  .movie-title{
+    font-size: 15px;
+    font-weight: 600;
+    min-height: 40px;
+  }
+
+  .stars{
+    display: flex;
+    gap: 4px;
+  }
+  .star-btn{
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: rgba(201,161,92,0.3);
+    transition: color 0.15s ease, transform 0.1s ease;
+  }
+  .star-btn:hover{ transform: scale(1.12); }
+  .star-btn.filled{ color: var(--gold-bright); }
+  .star-btn:focus-visible{
+    outline: 2px solid var(--gold-bright);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+  .star-btn svg{ width: 20px; height: 20px; display:block; }
+
+  .rating-label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    min-height: 14px;
+  }
+
+  /* ---------- Ticket counter (sticky) ---------- */
+  .ticket-bar{
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    width: min(560px, calc(100% - 32px));
+    background: var(--parchment);
+    color: var(--ink);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    z-index: 10;
+  }
+  .ticket-bar::before, .ticket-bar::after{
+    content: "";
+    position: absolute;
+    width: 16px; height: 16px;
+    background: var(--bg);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .ticket-bar::before{ left: -8px; }
+  .ticket-bar::after{ right: -8px; }
+
+  .ticket-count{
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    border-right: 1px dashed rgba(35,32,26,0.3);
+    padding-right: 16px;
+  }
+  .ticket-count .n{ font-size: 18px; color: var(--rose); }
+  .ticket-count.ready .n{ color: #2f6b3f; }
+
+  .ticket-note{
+    font-size: 13px;
+    color: #4a4436;
+    flex: 1;
+  }
+
+  .submit-btn{
+    appearance: none;
+    border: none;
+    border-radius: 4px;
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.2s ease, opacity 0.2s ease;
+    white-space: nowrap;
+  }
+  .submit-btn:disabled{
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .submit-btn:not(:disabled):hover{ background: #3a3425; }
+
+  /* ---------- Results ---------- */
+  #results-section{
+    margin-top: 64px;
+    display: none;
+  }
+  #results-section.visible{ display: block; }
+
+  .results-heading{
+    font-size: clamp(28px, 5vw, 40px);
+    color: var(--parchment);
+    margin: 0 0 6px;
+  }
+  .results-sub{ color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+
+  .results-strip{
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: rgba(201,161,92,0.15);
+    border: 1px solid rgba(201,161,92,0.25);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .result-row{
+    background: var(--bg-raised);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 20px;
+  }
+
+  .result-rank{
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--gold);
+    font-size: 13px;
+    width: 24px;
+    flex-shrink: 0;
+  }
+
+  .result-title{ flex: 1; font-weight: 600; font-size: 15px; }
+
+  .result-bar-track{
+    width: 120px;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .result-bar-fill{
+    height: 100%;
+    background: var(--gold-bright);
+    border-radius: 3px;
+  }
+
+  .result-score{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    width: 34px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ---------- Status / errors ---------- */
+  .status-line{
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 18px;
+  }
+  .status-line.error{ color: var(--rose); }
+
+  .spinner{
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid rgba(201,161,92,0.25);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 6px;
+    vertical-align: -2px;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
+
+  @media (max-width: 560px){
+    .ticket-bar{ flex-wrap: wrap; }
+    .ticket-note{ order: 3; flex-basis: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Admit One &mdash; Taste Calibration</div>
+  <h1 class="display">Pick five,<br>get your reel.</h1>
+  <p class="sub">Rate a handful of films you know. We'll fit a taste profile from scratch and hand you a reel picked for you &mdash; no account required.</p>
+</header>
+
+<div class="sprocket-strip"></div>
+
+<main>
+  <div class="reel-frame">
+    <div class="movie-grid" id="movie-grid"></div>
+  </div>
+  <div class="sprocket-strip dim" style="margin-top: 1px;"></div>
+
+  <div class="status-line" id="rate-status"></div>
+
+  <section id="results-section">
+    <h2 class="results-heading display">Your reel</h2>
+    <p class="results-sub" id="results-sub"></p>
+    <div class="results-strip" id="results-strip"></div>
+  </section>
+</main>
+
+<div class="ticket-bar">
+  <div class="ticket-count" id="ticket-count">
+    <span class="n" id="ticket-n">0</span>/5 rated
+  </div>
+  <div class="ticket-note" id="ticket-note">Rate at least 5 films to unlock your reel.</div>
+  <button class="submit-btn" id="submit-btn" disabled>Show my recommendations</button>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — point these at your Hugging Face Space.
+   Replace SPACE_URL with your Space's subdomain, and make sure
+   the api_name values match what you set in app.py:
+     gr.Interface(..., api_name="recommend")
+     gr.Interface(..., api_name="popular_movies")
+   ============================================================ */
+const CONFIG = {
+  SPACE_URL: "",
+  RECOMMEND_ENDPOINT: "/recommend",       // matches api_name="recommend"
+  MIN_RATINGS: 5,
+  TOP_N: 10
+};
+
+/* ============================================================
+   Popular movies to show for rating.
+   Replace this list with the `popular_titles` you saved in
+   movie_artifacts.pkl (or fetch it from a /run/popular_movies
+   endpoint on load — left as a static list here for simplicity
+   and to avoid a network round-trip before the page is usable).
+   ============================================================ */
+const POPULAR_MOVIES = [
+  "Star Wars (1977)", "Toy Story (1995)", "Fargo (1996)",
+  "Return of the Jedi (1983)", "Godfather, The (1972)",
+  "Silence of the Lambs, The (1991)", "Independence Day (ID4) (1996)",
+  "Raiders of the Lost Ark (1981)", "Pulp Fiction (1994)",
+  "Titanic (1997)", "Empire Strikes Back, The (1980)",
+  "Shawshank Redemption, The (1994)", "Braveheart (1995)",
+  "Jurassic Park (1993)", "Twelve Monkeys (1995)",
+  "Forrest Gump (1994)", "Terminator 2: Judgment Day (1991)",
+  "English Patient, The (1996)", "Scream (1996)",
+  "Back to the Future (1985)"
+];
+
+const state = { ratings: {} };
+
+const starSVG = (filled) => `
+  <svg viewBox="0 0 24 24" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.6">
+    <path d="M12 2.5l2.98 6.04 6.67.97-4.83 4.7 1.14 6.65L12 17.77l-5.96 3.09 1.14-6.65-4.83-4.7 6.67-.97L12 2.5z"/>
+  </svg>`;
+
+function renderGrid(){
+  const grid = document.getElementById('movie-grid');
+  grid.innerHTML = '';
+
+  POPULAR_MOVIES.forEach((title) => {
+    const card = document.createElement('div');
+    card.className = 'movie-card';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'movie-title';
+    titleEl.textContent = title;
+    card.appendChild(titleEl);
+
+    const starsWrap = document.createElement('div');
+    starsWrap.className = 'stars';
+    starsWrap.setAttribute('role', 'radiogroup');
+    starsWrap.setAttribute('aria-label', `Rate ${title}`);
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'rating-label';
+
+    for(let i = 1; i <= 5; i++){
+      const btn = document.createElement('button');
+      btn.className = 'star-btn';
+      btn.type = 'button';
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', 'false');
+      btn.setAttribute('aria-label', `${i} star${i > 1 ? 's' : ''}`);
+      btn.innerHTML = starSVG(false);
+      btn.dataset.value = i;
+
+      btn.addEventListener('click', () => {
+        const current = state.ratings[title];
+        // clicking the already-selected star clears the rating
+        const newVal = (current === i) ? undefined : i;
+        setRating(title, newVal, starsWrap, labelEl);
+      });
+
+      starsWrap.appendChild(btn);
+    }
+
+    card.appendChild(starsWrap);
+    card.appendChild(labelEl);
+    grid.appendChild(card);
+  });
+}
+
+function setRating(title, value, starsWrap, labelEl){
+  if(value === undefined){
+    delete state.ratings[title];
+  } else {
+    state.ratings[title] = value;
+  }
+
+  [...starsWrap.children].forEach((btn) => {
+    const v = Number(btn.dataset.value);
+    const filled = value !== undefined && v <= value;
+    btn.classList.toggle('filled', filled);
+    btn.querySelector('svg').outerHTML = starSVG(filled);
+    btn.setAttribute('aria-checked', String(v === value));
+  });
+
+  labelEl.textContent = value ? `Rated ${value}/5` : '';
+  updateTicket();
+}
+
+function updateTicket(){
+  const count = Object.keys(state.ratings).length;
+  const n = document.getElementById('ticket-n');
+  const counter = document.getElementById('ticket-count');
+  const note = document.getElementById('ticket-note');
+  const btn = document.getElementById('submit-btn');
+
+  n.textContent = count;
+  const ready = count >= CONFIG.MIN_RATINGS;
+  counter.classList.toggle('ready', ready);
+  btn.disabled = !ready;
+  note.textContent = ready
+    ? "You're set — grab your reel whenever you're ready."
+    : `Rate at least ${CONFIG.MIN_RATINGS} films to unlock your reel.`;
+}
+
+async function submitRatings(){
+  const statusEl = document.getElementById('rate-status');
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  statusEl.classList.remove('error');
+  statusEl.innerHTML = `<span class="spinner"></span> Fitting your taste profile…`;
+
+  try{
+    // Gradio's classic REST shape: POST an array of positional args to /run/<api_name>.
+    // If your Space runs a newer Gradio version, check its API docs page
+    // (yourspace.hf.space/?view=api) for the exact request/response shape —
+    // some versions use /call/<api_name> plus a follow-up GET for the result.
+    const response = await fetch(CONFIG.SPACE_URL + CONFIG.RECOMMEND_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ratings: state.ratings })
+    });
+
+    if(!response.ok){
+      throw new Error(`Space responded with ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const result = JSON.parse(payload.data[0]);
+
+    if(result.error){
+      throw new Error(result.error);
+    }
+
+    renderResults(result.recommendations);
+    statusEl.textContent = '';
+  } catch(err){
+    statusEl.classList.add('error');
+    statusEl.textContent = `Couldn't reach the recommender — ${err.message}`;
+  } finally {
+    btn.disabled = Object.keys(state.ratings).length < CONFIG.MIN_RATINGS;
+  }
+}
+
+function renderResults(recs){
+  const section = document.getElementById('results-section');
+  const strip = document.getElementById('results-strip');
+  const sub = document.getElementById('results-sub');
+
+  strip.innerHTML = '';
+  sub.textContent = `Based on the ${Object.keys(state.ratings).length} films you rated.`;
+
+  const maxScore = Math.max(...recs.map(r => r[1]), 5);
+
+  recs.slice(0, CONFIG.TOP_N).forEach(([title, score], i) => {
+    const row = document.createElement('div');
+    row.className = 'result-row';
+    row.innerHTML = `
+      <div class="result-rank mono">${String(i + 1).padStart(2, '0')}</div>
+      <div class="result-title">${title}</div>
+      <div class="result-bar-track"><div class="result-bar-fill" style="width:${(score / maxScore) * 100}%"></div></div>
+      <div class="result-score mono">${score.toFixed(1)}</div>
+    `;
+    strip.appendChild(row);
+  });
+
+  section.classList.add('visible');
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.getElementById('submit-btn').addEventListener('click', submitRatings);
+renderGrid();
+</script>
+
+</body>
+</html>
