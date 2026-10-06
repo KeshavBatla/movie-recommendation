@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 import torch
 import torch.nn.functional as F
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -10,17 +11,40 @@ from fastapi.responses import FileResponse
 
 app = FastAPI(title="Movie Recommender API")
 
-# Allow your GitHub Pages frontend to access this API safely
+# Configure CORS for Vercel deployment and local development
+import os
+
+# Determine allowed origins based on environment
+allowed_origins = [
+    "http://localhost:3000",  # Common React dev port
+    "http://localhost:8000",  # Our default port
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
+]
+
+# In Vercel deployments, we can allow the Vercel URL
+vercel_url = os.environ.get("VERCEL_URL")
+if vercel_url:
+    allowed_origins.extend([
+        f"https://{vercel_url}",
+        f"http://{vercel_url}",
+    ])
+
+# For production, we could add specific domains here
+# For now, we'll keep it flexible but not overly permissive
+# The same-origin policy will handle frontend-backend communication when served together
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, replace with your exact GitHub pages URL
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Load your exported pkl artifacts safely
-with open("movie_model.pkl", "rb") as f:
+BASE_DIR = Path(__file__).resolve().parent
+with open(BASE_DIR / "movie_model.pkl", "rb") as f:
     artifacts = pickle.load(f)
 
 MOVIE_FACTORS = artifacts["movie_factors"]
@@ -84,12 +108,12 @@ def recommend(payload: RatingRequest):
 
     return {"recommendations": recs}
 
+@app.get("/")
+def serve_frontend():
+    # This tells the server to load your HTML file when someone visits the site
+    return FileResponse(BASE_DIR / "index.html")
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-
-@app.get("/")
-def serve_frontend():
-    # This tells the server to load your HTML file when someone visits the site
-    return FileResponse("index.html")
